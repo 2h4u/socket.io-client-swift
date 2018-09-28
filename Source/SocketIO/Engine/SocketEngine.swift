@@ -117,6 +117,10 @@ open class SocketEngine : NSObject, URLSessionDelegate, SocketEnginePollable, So
     /// The WebSocket for this engine.
     public private(set) var ws: WebSocket?
 
+    /// If `true`, the engine uses the shared HTTPCookieStorage of the app.
+    /// Otherwise it creates it's own cookieStorage.
+    public private(set) var useSharedCookieStorage = false
+
     /// The client for this engine.
     public weak var client: SocketEngineClient?
 
@@ -281,7 +285,7 @@ open class SocketEngine : NSObject, URLSessionDelegate, SocketEnginePollable, So
     private func createWebSocketAndConnect() {
         var req = URLRequest(url: urlWebSocketWithSid)
 
-        addHeaders(to: &req, includingCookies: session?.configuration.httpCookieStorage?.cookies)
+        addHeaders(to: &req, includingCookies: session?.configuration.httpCookieStorage?.cookies(for: urlWebSocketWithSid))
 
         ws = WebSocket(request: req)
         ws?.callbackQueue = engineQueue
@@ -528,6 +532,9 @@ open class SocketEngine : NSObject, URLSessionDelegate, SocketEnginePollable, So
         probing = false
         invalidated = false
         session = Foundation.URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: queue)
+        if useSharedCookieStorage == false {
+          session!.configuration.httpCookieStorage = HTTPCookieStorage()
+        }
         sid = ""
         waitingForPoll = false
         waitingForPost = false
@@ -588,6 +595,8 @@ open class SocketEngine : NSObject, URLSessionDelegate, SocketEnginePollable, So
                 self.security = security
             case .compress:
                 self.compress = true
+            case let .useSharedCookieStorage(useSharedCookieStorage):
+                self.useSharedCookieStorage = useSharedCookieStorage
             default:
                 continue
             }

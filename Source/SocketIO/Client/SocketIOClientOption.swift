@@ -90,6 +90,9 @@ public enum SocketIOClientOption : ClientOption {
     /// Sets an NSURLSessionDelegate for the underlying engine. Useful if you need to handle self-signed certs.
     case sessionDelegate(URLSessionDelegate)
 
+    /// Set `true` if you want to use the shared HTTPCookieStorage of your app.
+    case useSharedCookieStorage(Bool)
+
     // MARK: Properties
 
     /// The description of this option.
@@ -133,6 +136,8 @@ public enum SocketIOClientOption : ClientOption {
             description = "security"
         case .sessionDelegate:
             description = "sessionDelegate"
+        case .useSharedCookieStorage:
+            description = "useSharedCookieStorage"
         }
 
         return description
@@ -178,6 +183,8 @@ public enum SocketIOClientOption : ClientOption {
             value = signed
         case let .sessionDelegate(delegate):
             value = delegate
+        case let .useSharedCookieStorage(useShared):
+            value = useShared
         }
 
         return value
